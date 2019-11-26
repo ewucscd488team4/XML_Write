@@ -1,0 +1,11 @@
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\bin\Debug\netcoreapp3.0\XML_Write.exe
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\bin\Debug\netcoreapp3.0\XML_Write.deps.json
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\bin\Debug\netcoreapp3.0\XML_Write.runtimeconfig.json
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\bin\Debug\netcoreapp3.0\XML_Write.runtimeconfig.dev.json
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\bin\Debug\netcoreapp3.0\XML_Write.dll
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\bin\Debug\netcoreapp3.0\XML_Write.pdb
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\obj\Debug\netcoreapp3.0\XML_Write.csprojAssemblyReference.cache
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\obj\Debug\netcoreapp3.0\XML_Write.AssemblyInfoInputs.cache
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\obj\Debug\netcoreapp3.0\XML_Write.AssemblyInfo.cs
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\obj\Debug\netcoreapp3.0\XML_Write.dll
+C:\Users\Diesel\Documents\c sharp workspaces\cscd488\Testing\XML_Write\XML_Write\obj\Debug\netcoreapp3.0\XML_Write.pdb
