@@ -1,9 +1,12 @@
-﻿using System;
+﻿using SAUSALibrary.FileHandling.Compression;
+using SAUSALibrary.Defaults;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+
 
 namespace XML_Write
 {
@@ -21,27 +24,53 @@ namespace XML_Write
             string _SettingsPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + SETTINGS; //actual path to my recent projects xml directory
             string _ProjectPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + PROJECT; //actual path to my recent projects xml directory
 
+            
             if (!File.Exists(_SettingsPath)) //writes a new settings XML file to the given directory IF it does not exist.
             {
 
-                /*writes the following blank xml structure NOTE: **OVERWRITES FILE IF IT EXISTS**
+                /* writes the following blank xml structure
 
-                <Sausa>
-                  <Projects></Projects>
-                  <Misc></Misc>
-                </Sausa>*/
+                 <Sausa>
+                   <ProjName>
+                     <Name Name="XXX" />
+                   </ProjName>
+                   <Storage>
+                     <Dimensions Length="XXX" Width="XXX" Height="XXX" Weight="XXX" />
+                   </Storage>
+                   <Stacks>
+                     <Data FileName="XXX" Path="XXX" />
+                   </Stacks>
+                 </Sausa>
+                 */
 
                 var xmlNode =
-                    new XElement("Sausa",   ///root of xml node
-                                new XElement("Projects", ""), //first child node
-                             new XElement("Misc", ""), //firt second inner child node
+                    new XElement("Sausa",                               //root of xml node
+                                new XElement("ProjName",                //1st inner child node
+                                    new XElement("Name",                //data node
+                                        new XAttribute("Name", "XXX")   //attribute in data node
+                                    ),
+                                ""),                                    
+                                new XElement("Storage",                 //2nd child node
+                                    new XElement("Dimensions",          //data node
+                                        new XAttribute("Length", "XXX"),//attribute 1
+                                        new XAttribute("Width", "XXX"), //attribute 2
+                                        new XAttribute("Height", "XXX"),//attribute 3
+                                        new XAttribute("Weight", "XXX") //attribute 4
+                                    ),
+                                ""),
+                                new XElement("Stacks",                  //3rd child node
+                                    new XElement("Data",                //data node
+                                        new XAttribute("FileName","XXX"),//first attribute
+                                        new XAttribute("Path","XXX")     //2nd attribute
+                                    ),
+                                ""),  //3rd inner child node
                     "");
                 xmlNode.Save(_SettingsPath);
             }
             else //appends to already existing XML file
             {
 
-                XmlDocument doc = new XmlDocument();
+                /*XmlDocument doc = new XmlDocument();
                 doc.Load(_SettingsPath);
 
                 XmlNode sausaRoot = doc.DocumentElement; //gets root element in XML file
@@ -58,8 +87,12 @@ namespace XML_Write
                 projectsRoot.AppendChild(newProject);
 
                 //save the xml file
-                doc.Save(_SettingsPath);
+                doc.Save(_SettingsPath);*/
             }
+
+            //ZipFromScratchFolder.SaveProject(FilePathDefaults.ScratchFolder,"Test.sdf", FilePathDefaults.DefaultSavePath);
+            //var fullProjectFilePath = Path.Combine(FilePathDefaults.DefaultSavePath, "Test.sdf");
+            //UnzipFromProjectFile.OpenProject(fullProjectFilePath, FilePathDefaults.ScratchFolder);
 
         }// end of main
     }

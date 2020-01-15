@@ -1,0 +1,89 @@
+﻿<Window x:Class="WpfApp1.Views.NewRoom"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        
+        xmlns:views="clr-namespace:WpfApp1.Views"
+        xmlns:viewmodels="clr-namespace:WpfApp1.ViewModels"
+        xmlns:models="clr-namespace:SAUSALibrary.Models;assembly=SAUSALibrary"
+        
+        mc:Ignorable="d"       
+                
+        d:DataContext="{d:DesignInstance Type=viewmodels:NewRoomViewModel}"
+        
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignPaper}"
+        
+        Title="NewRoom" Height="490" Width="500" MinHeight="490" MinWidth="500">
+    <!-- sets data context for view model -->
+    <Window.DataContext>
+        <viewmodels:NewRoomViewModel>
+            
+        </viewmodels:NewRoomViewModel>
+    </Window.DataContext>
+    
+    
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>            
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Storage Area Parameters" Grid.Column="1" Grid.Row="1" FontSize="36" TextAlignment="Center" />       
+
+        <Grid Grid.Column="1" Grid.Row="2" HorizontalAlignment="Center">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>                
+            </Grid.RowDefinitions>
+            
+            <TextBlock Text="Units of Measure" FontSize="20" FontWeight="Medium"  Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="5" Grid.RowSpan="2"/>
+            
+            <!-- drop down box goes here -->
+            <ComboBox Width="100" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,25,5,5">                
+                <ComboBoxItem Content="Imperial"/>
+                <ComboBoxItem Content="Metric"/>                
+            </ComboBox>
+
+            <TextBlock Text="Room Dimensions" FontSize="20" FontWeight="Medium" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="5"/>
+
+            <StackPanel Grid.Column="0" Grid.Row="3">
+                <TextBlock Text="Length" FontSize="24" Margin="5,15,5,0"/>
+                <TextBlock Text="Width" FontSize="24" Margin="5,15,5,0"/>
+                <TextBlock Text="Height" FontSize="24" Margin="5,15,5,0"/>
+                <TextBlock Text="Weight" FontSize="24" Margin="5,15,5,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Grid.Row="3">
+                <TextBox x:Name="rLength" Width="80" FontSize="24" Margin="5"/>
+                <TextBox x:Name="rWidth" Width="80" FontSize="24" Margin="5"/>
+                <TextBox x:Name="rHeight" Width="80" FontSize="24" Margin="5"/>
+                <TextBox x:Name="rWeight" Width="80" FontSize="24" Margin="5"/>                
+            </StackPanel>
+            
+        </Grid>
+
+        <WrapPanel Margin="5" Grid.Column="1" Grid.Row="3" HorizontalAlignment="Center">
+            <Button Content="Save"  Width="80"  Margin="5" Click="SetRoomDimensions"/>
+            <Button Content="Close" Width="80"  Margin="5" Click="CloseNewRoom_Click"/>
+        </WrapPanel>
+        
+    </Grid>
+</Window>
