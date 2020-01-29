@@ -13,26 +13,13 @@ using System.Windows.Shapes;
 namespace WpfApp1.Views
 {
     /// <summary>
-    /// Interaction logic for NewStack.xaml
+    /// Interaction logic for Splash.xaml
     /// </summary>
-    public partial class NewStack : Window
+    public partial class Splash : Window
     {
-        private string? projectDB;
-
-        public NewStack()
+        public Splash()
         {
             InitializeComponent();
-        }
-
-        public NewStack(string? projectDBName)
-        {
-            projectDB = "Hangerbay.sqlite";
-            InitializeComponent();
-        }
-
-        private void Accept_Stack(object sender, RoutedEventArgs e)
-        {
-            this.Close();
         }
     }
 }

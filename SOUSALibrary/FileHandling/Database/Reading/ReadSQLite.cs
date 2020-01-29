@@ -1,4 +1,5 @@
 ﻿using SAUSALibrary.Models;
+using SAUSALibrary.Models.Database;
 using System.Collections.ObjectModel;
 using System.Data.SQLite;
 using System.IO;
@@ -48,40 +49,39 @@ namespace SAUSALibrary.FileHandling.Database.Reading
         /// <summary>
         /// Reads and returns the entire project database for use in drawing the 3D GUI view window
         /// </summary>
-        /// <param name="dbFullFilePath"></param>
+        /// <param name="workingFolder"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static ObservableCollection<StackModel> GetEntireStack(string dbFullFilePath, string dbFile)
+        public static ObservableCollection<FullStackModel> GetEntireStack(string workingFolder, string dbFileName)
         {
-            ObservableCollection<StackModel> modelList = new ObservableCollection<StackModel>();
-            string[] file = dbFile.Split('.');
+            ObservableCollection<FullStackModel> modelList = new ObservableCollection<FullStackModel>();
+            var fqDBFileName = Path.Combine(workingFolder, dbFileName);
+            string[] fileName = dbFileName.Split('.');
 
-            if (File.Exists(dbFullFilePath))
+            if (File.Exists(fqDBFileName))
             {
-                SQLiteConnection m_dbConnection = new SQLiteConnection("Data Source=" + dbFullFilePath + ";Version=3;");
+                SQLiteConnection m_dbConnection = new SQLiteConnection("Data Source=" + fqDBFileName + ";Version=3;");
                 SQLiteDataReader dritem = null;
                 m_dbConnection.Open();
 
-                SQLiteCommand command = new SQLiteCommand("select * from " + file[0], m_dbConnection);
+                SQLiteCommand command = new SQLiteCommand("select * from " + fileName[0], m_dbConnection);
 
                 dritem = command.ExecuteReader();
 
                 while (dritem.Read())
                 {
-                    StackModel model = new StackModel
-                    {
-                        Index = (long)dritem["ID"],
-                        XPOS = (double)dritem["Xpos"],
-                        YPOS = (double)dritem["Ypos"],
-                        ZPOS = (double)dritem["Zpos"],
-                        Length = (double)dritem["Length"],
-                        Width = (double)dritem["Width"],
-                        Height = (double)dritem["Height"],
-                        Weight = (double)dritem["Weight"],
-                        CrateName = dritem["Name"].ToString()
-                    };
-
-                    modelList.Add(model);
+                    modelList.Add(new FullStackModel(
+                        (long)dritem["ID"],
+                        (double)dritem["Xpos"],
+                        (double)dritem["Ypos"],
+                        (double)dritem["Zpos"],
+                        (double)dritem["Length"],
+                        (double)dritem["Width"],
+                        (double)dritem["Height"],
+                        (double)dritem["Weight"],
+                        dritem["Name"].ToString()
+                        )
+                        );
                 }
                 m_dbConnection.Close();
             }
@@ -118,11 +118,11 @@ namespace SAUSALibrary.FileHandling.Database.Reading
                 //TODO read fields from database with fields outside of the defaults
 
                 //reads default column fields
-                model.length = dritem.GetName(4);
-                model.width = dritem.GetName(5);
-                model.height = dritem.GetName(6);
-                model.weight = dritem.GetName(7);
-                model.name = dritem.GetName(8);
+                model.Length = dritem.GetName(4);
+                model.Width = dritem.GetName(5);
+                model.Height = dritem.GetName(6);
+                model.Weight = dritem.GetName(7);
+                model.CrateName = dritem.GetName(8);
                 m_dbConnection.Close();
             }
             else

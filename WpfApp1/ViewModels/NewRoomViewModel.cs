@@ -15,7 +15,7 @@ namespace WpfApp1.ViewModels
 
         private ProjectStorageDimensionsModel? _StorageModel;
 
-        public ProjectStorageDimensionsModel StorageModel
+        public ProjectStorageDimensionsModel? StorageModel
         {
             get => _StorageModel;
             set => SetProperty(ref _StorageModel, value);
