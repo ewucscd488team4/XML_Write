@@ -3,16 +3,23 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        
         xmlns:local="clr-namespace:WpfApp1.Views.FileViews"
-        xmlns:views="clr-namespace:WpfApp1.Views"
+        xmlns:views="clr-namespace:WpfApp1.Views"        
         xmlns:viewmodels="clr-namespace:WpfApp1.ViewModels"
         xmlns:models="clr-namespace:SAUSALibrary.Models;assembly=SAUSALibrary"
         
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
+        d:DataContext="{d:DesignInstance Type=viewmodels:NewRoomViewModel}"
         
         TextElement.Foreground="{DynamicResource MaterialDesignBody}" Background="{DynamicResource MaterialDesignPaper}"
-        Title="NewRoom" Height="450" Width="800">
+        
+        Title="Set New Room Dimensions" Height="490" Width="500">
+    
+    <Window.DataContext>
+        <viewmodels:NewRoomViewModel/>
+    </Window.DataContext>
+    
     <Grid>
 
         <Grid.ColumnDefinitions>
@@ -62,16 +69,16 @@
             </StackPanel>
 
             <StackPanel Grid.Column="1" Grid.Row="3">
-                <TextBox x:Name="rLength" Width="80" FontSize="24" Margin="5"/>
-                <TextBox x:Name="rWidth" Width="80" FontSize="24" Margin="5"/>
-                <TextBox x:Name="rHeight" Width="80" FontSize="24" Margin="5"/>
-                <TextBox x:Name="rWeight" Width="80" FontSize="24" Margin="5"/>
+                <TextBox FontSize="24" Margin="5,5,5,0" Text="{Binding XStorageDimension}"/>
+                <TextBox FontSize="24" Margin="5,5,5,0" Text="{Binding YStorageDimension}"/>
+                <TextBox FontSize="24" Margin="5,5,5,0" Text="{Binding ZStorageDimension}"/>
+                <TextBox FontSize="24" Margin="5,5,5,0" Text="{Binding WeightStorageMax}"/>
             </StackPanel>
             
         </Grid>
 
         <WrapPanel Margin="5" Grid.Column="1" Grid.Row="3" HorizontalAlignment="Center">
-            <Button Content="Save"  Width="80"  Margin="5" Click="SetRoomDimensions"/>
+            <Button Content="Save"  Width="80"  Margin="5" Command="{Binding ApplyRoomDimensions}"/>
             <Button Content="Close" Width="80"  Margin="5" Click="CloseNewRoom_Click"/>
         </WrapPanel>
         

@@ -14,6 +14,7 @@ namespace WpfApp1.ViewModels
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        private const string? settingXMLFile = "Settings.xml";
         /*/// <summary>
         /// Private field to hold the last saved directory string being extracted out of the settings file
         /// </summary>
@@ -182,7 +183,7 @@ namespace WpfApp1.ViewModels
         /// <param></param>
         private void SetThemeXML(string newData)
         {
-            WriteXML.WriteThemeSetting(FilePathDefaults.SettingsFile, newData);
+            WriteXML.WriteThemeSetting(FilePathDefaults.SettingsFile, settingXMLFile, newData);
         }
 
         /// <summary>
@@ -190,7 +191,7 @@ namespace WpfApp1.ViewModels
         /// </summary>
         private void SetDirectoryXML(string newData)
         {
-            WriteXML.WritePathSetting(FilePathDefaults.SettingsFile, newData);
+            WriteXML.WritePathSetting(FilePathDefaults.SettingsFile, settingXMLFile, newData);
         }
     }
 }

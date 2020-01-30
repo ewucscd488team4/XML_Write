@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         
         xmlns:local="clr-namespace:WpfApp1.Views.WarningViews"
-        xmlns:views="clr-namespace:WPFUI.Views"
+        xmlns:views="clr-namespace:WpfApp1.Views"
         xmlns:viewmodels="clr-namespace:WpfApp1.ViewModels"
         
         mc:Ignorable="d"

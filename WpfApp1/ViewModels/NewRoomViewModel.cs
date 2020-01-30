@@ -1,45 +1,89 @@
-﻿using SAUSALibrary.FileHandling.XML.Writing;
-using SAUSALibrary.FileHandling.Database;
+﻿using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight;
+using SAUSALibrary.FileHandling.XML.Writing;
 using SAUSALibrary.Defaults;
-using SAUSALibrary.Models;
-using GalaSoft.MvvmLight.Command;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Collections.Generic;
 
 namespace WpfApp1.ViewModels
 {
-    public class NewRoomViewModel : INotifyPropertyChanged
+    public class NewRoomViewModel : ViewModelBase
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        private ProjectStorageDimensionsModel? _StorageModel;
-
-        public ProjectStorageDimensionsModel? StorageModel
+        
+        private string? _XStorageDimension;
+        public string? XStorageDimension
         {
-            get => _StorageModel;
-            set => SetProperty(ref _StorageModel, value);
+            get => _XStorageDimension;
+            set => Set(ref _XStorageDimension, value);
+        }
+
+        private string? _YStorageDimension;
+        public string? YStorageDimension
+        {
+            get => _YStorageDimension;
+            set => Set(ref _YStorageDimension, value);
+        }
+        private string? _ZStorageDimension;
+        public string? ZStorageDimension
+        {
+            get => _ZStorageDimension;
+            set => Set(ref _ZStorageDimension, value);
+        }
+        private string? _WeightStorageMax;
+        public string? WeightStorageMax
+        {
+            get => _WeightStorageMax;
+            set => Set(ref _WeightStorageMax, value);
         }
 
         public RelayCommand ApplyRoomDimensions { get; }
 
         public NewRoomViewModel()
-        {
+        {            
             ApplyRoomDimensions = new RelayCommand(OnApplyRoomDimensions);
+            InitStorageFields();
         }
 
         private void OnApplyRoomDimensions()
         {
+            if(RoomDimensionFieldValidator())
+            {
+                string[] dimensions = new string[4];
+                string[] NewRoomDimensions = {XStorageDimension,YStorageDimension,ZStorageDimension,WeightStorageMax };
+                dimensions[0] = XStorageDimension;
+                dimensions[1] = YStorageDimension;
+                dimensions[2] = ZStorageDimension;
+                dimensions[3] = WeightStorageMax;
 
+                //send array to the write method
+                WriteXML.SaveDimensions(FilePathDefaults.ScratchFolder, "test.xml", NewRoomDimensions);
+
+                //set view state appropriate to the current new project work flow state
+            }
+            else
+            {
+                //TODO launch room dimension error dialog
+                
+            }
+        }
+        
+        private bool RoomDimensionFieldValidator()
+        {
+            if (string.IsNullOrEmpty(XStorageDimension) || XStorageDimension is "0")
+                return false;
+            if (string.IsNullOrEmpty(YStorageDimension) || YStorageDimension is "0")
+                return false;
+            if (string.IsNullOrEmpty(ZStorageDimension) || ZStorageDimension is "0")
+                return false;
+            if (string.IsNullOrEmpty(WeightStorageMax) || WeightStorageMax is "0")
+                return false;
+            return true;
         }
 
-        private void SetProperty<T>(ref T field, T value, [CallerMemberName]string propertyName = null)
+        private void InitStorageFields()
         {
-            if (!EqualityComparer<T>.Default.Equals(field, value)) //if using custom classes need to implement equals
-            {
-                field = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
+            XStorageDimension = "0";
+            YStorageDimension = "0";
+            ZStorageDimension = "0";
+            WeightStorageMax = "0";
         }
     }
 }
