@@ -21,5 +21,10 @@ namespace WpfApp1.Views.EditViews
         {
             InitializeComponent();
         }
+
+        private void ApplyDatabaseParam_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
     }
 }

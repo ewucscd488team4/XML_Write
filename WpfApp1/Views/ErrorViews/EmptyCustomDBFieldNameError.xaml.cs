@@ -21,5 +21,11 @@ namespace WpfApp1.Views.ErrorViews
         {
             InitializeComponent();
         }
+
+        private void CloseWindow_Click(object sender, RoutedEventArgs e)
+        {
+            //closes the Window, all other processing happens in the view model
+            this.Close();
+        }
     }
 }

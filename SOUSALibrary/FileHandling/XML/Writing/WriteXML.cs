@@ -40,18 +40,18 @@ namespace SAUSALibrary.FileHandling.XML.Writing
                                     ),
                                 ""), //end of 2nd child node
 
-                                new XElement("ExternalDatabase",        //3rd child node
-                                    new XElement("Data",                //data node
-                                        new XAttribute("Type", "XXX"),  //attribute 1
-                                        new XAttribute("Server", "XXX"),//attribute 2
+                                new XElement("ExternalDatabase",          //3rd child node
+                                    new XElement("Data",                  //data node
+                                        new XAttribute("Type", "XXX"),    //attribute 1
+                                        new XAttribute("Server", "XXX"),  //attribute 2
                                         new XAttribute("Database", "XXX"),//attribute 3
-                                        new XAttribute("UserID", "XXX"),//attribute 4
-                                        new XAttribute("Password", "XXX")//attribute 5
+                                        new XAttribute("UserID", "XXX"),  //attribute 4
+                                        new XAttribute("Password", "XXX") //attribute 5
                                     ),
                                 ""), //end of 3rd child node
 
-                                new XElement("Stacks",                  //4th child node
-                                    new XElement("Data",                //data node
+                                new XElement("Stacks",                     //4th child node
+                                    new XElement("Data",                   //data node
                                         new XAttribute("Tablename", "XXX"),//first attribute
                                         new XAttribute("Filename", "XXX")  //2nd attribute
                                     ),
@@ -117,15 +117,16 @@ namespace SAUSALibrary.FileHandling.XML.Writing
         /// </summary>
         /// <param name="workingFolder"></param>
         /// <param name="projectName"></param>
-        public static void SaveProjectName(string workingFolder, string xmlFileName, string projectName)
+        public static void SaveProjectName(string workingFolder, string xmlFileName)
         {
             var fqXMLFileName = Path.Combine(workingFolder, xmlFileName);
+            string[] file = xmlFileName.Split('.');
             if (File.Exists(fqXMLFileName))
             {
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(fqXMLFileName);
                 XmlNode node = xmlDoc.SelectSingleNode(XMLDataDefaults.ProjectNameStructure);
-                node.Attributes[0].Value = projectName; //only one attribute in this node
+                node.Attributes[0].Value = file[0]; //only one attribute in this node
                 xmlDoc.Save(fqXMLFileName);
             }
             else
@@ -139,15 +140,16 @@ namespace SAUSALibrary.FileHandling.XML.Writing
         /// </summary>
         /// <param name="dBaseFileName"></param>
         /// <param name="dBaseTableName"></param>
-        public static void SaveDatabase(string workingFolder, string xmlFileName, string dBaseTableName, string dBaseFileName)
+        public static void SaveDatabase(string workingFolder, string xmlFileName, string dBaseFileName)
         {
             var fqXMLFileName = Path.Combine(workingFolder, xmlFileName);
+            string[] file = dBaseFileName.Split('.');
             if (File.Exists(fqXMLFileName))
             {
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(fqXMLFileName);
                 XmlNode node = xmlDoc.SelectSingleNode(XMLDataDefaults.ProjectStackDataStructure);
-                node.Attributes[0].Value = dBaseTableName; //database table name
+                node.Attributes[0].Value = file[0]; //database table name
                 node.Attributes[1].Value = dBaseFileName; //database file name
                 xmlDoc.Save(fqXMLFileName);
             }
@@ -188,6 +190,38 @@ namespace SAUSALibrary.FileHandling.XML.Writing
             else
             {
                 throw new FileNotFoundException("Given XML File does not exist!");
+            }
+        }
+
+        /// <summary>
+        /// Write external database values to the given project XML file
+        /// </summary>
+        /// <param name="workingFolder"></param>
+        /// <param name="xmlFileName"></param>
+        /// <param name="externalDBData"></param>
+        public static void StoreExternalDBData(string workingFolder, string xmlFileName, string[] externalDBData)
+        {
+            var fqXMLFileName = Path.Combine(workingFolder, xmlFileName);
+            if (File.Exists(fqXMLFileName))
+            {
+                if(externalDBData.Length == 5)
+                {
+                    XmlDocument xmlDoc = new XmlDocument();
+                    xmlDoc.Load(fqXMLFileName);
+                    XmlNode node = xmlDoc.SelectSingleNode(XMLDataDefaults.ProjectExternalDatabaseStructure);
+                    node.Attributes[0].Value = externalDBData[0]; //type
+                    node.Attributes[1].Value = externalDBData[1]; //server
+                    node.Attributes[2].Value = externalDBData[2]; //database
+                    node.Attributes[3].Value = externalDBData[3]; //userID
+                    node.Attributes[4].Value = externalDBData[4]; //password
+                    xmlDoc.Save(fqXMLFileName);                    
+                } else
+                {
+                    throw new ArgumentOutOfRangeException("Array must contain indices for type, server, database, userID, and password");
+                }
+            } else
+            {
+                throw new FileNotFoundException("Given XML file does not exist!");
             }
         }
     }
