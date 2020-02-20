@@ -54,12 +54,22 @@ namespace WpfApp1.ViewModels
             set => Set(ref _TestFieldVisibility, value);
         }
 
+        private bool _InitExternalDB;
+
+        public bool InitExternalDB
+        {
+            get => _InitExternalDB;
+            set => Set(ref _InitExternalDB, value);
+        }
+
         #endregion
 
         #region commands
 
         public RelayCommand<Window>? ApplyDatabaseSettings { get; private set; }
         public RelayCommand? TestDatabaseSettings { get; private set; }
+
+        public RelayCommand? InitializeProjectTable { get; private set; }
 
         #endregion
 
@@ -68,7 +78,9 @@ namespace WpfApp1.ViewModels
             TestFieldVisibility = Visibility.Hidden;
             ApplyDatabaseSettings = new RelayCommand<Window>(OnApplySettings);
             TestDatabaseSettings = new RelayCommand(OnTestDataBaseSettings);
+            InitializeProjectTable = new RelayCommand(OnSetDBTable);
             DBFieldData = new string[] { "WW", "XX","YY","ZZ" };
+            InitExternalDB = false;
             TestSuccessOrFailString = "Press Test to test your entries";
         }
 
@@ -95,6 +107,7 @@ namespace WpfApp1.ViewModels
                 if (TestDBSettings(SelectedDBType)) //hard coded to work with smarterASP test database; for testing
                 {
                     TestSuccessOrFailString = "TEST SUCCESSFUL";
+                    InitExternalDB = true;
                 } else
                 {
                     TestSuccessOrFailString = "TEST FAILED";
@@ -110,6 +123,11 @@ namespace WpfApp1.ViewModels
                 EmptyCustomDBFieldNameError error = new EmptyCustomDBFieldNameError();
                 error.Show();
             }
+        }
+
+        private void OnSetDBTable()
+        {
+            TestSuccessOrFailString = "Initialization Successful";
         }
                 
 
