@@ -18,34 +18,39 @@ namespace SAUSALibrary.FileHandling.XML.Reading
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static List<ExternalDBModel> GetDatabaseModel(string filePath)
-        {
+        public static ExternalDBModel GetExternalProjectDBSettings(string workingFolder, string projectXMLFile)
+        {            
+            var fqFilePath = Path.Combine(workingFolder, projectXMLFile);
 
-            List<ExternalDBModel> models = new List<ExternalDBModel>();
-
-            using (XmlReader _Reader = XmlReader.Create(new FileStream(filePath, FileMode.Open), new XmlReaderSettings() { CloseInput = true }))
+            if(File.Exists(fqFilePath))
             {
-
-                while (_Reader.Read()) //while reader can read
+                using (XmlReader _Reader = XmlReader.Create(new FileStream(fqFilePath, FileMode.Open), new XmlReaderSettings() { CloseInput = true }))
                 {
                     ExternalDBModel model = new ExternalDBModel();
-                    if ((_Reader.NodeType == XmlNodeType.Element) && (_Reader.Name == "Data")) //looks for xml parent node type of "project" (will look like <Data />
+                    while (_Reader.Read()) //while reader can read
                     {
-                        if (_Reader.HasAttributes) //if current line has attributes
-                        {
-                            //read each attribute in the line if it matches the definition 
 
-                            model.Type = _Reader.GetAttribute("Type");
-                            model.Server = _Reader.GetAttribute("Server");
-                            model.Database = _Reader.GetAttribute("Database");
-                            model.UserID = _Reader.GetAttribute("UserID");
-                            model.PassWord = _Reader.GetAttribute("Password");
-                            models.Add(model);
+                        if ((_Reader.NodeType == XmlNodeType.Element) && (_Reader.Name == "ExternalDatabase")) //looks for xml parent node type of "project" (will look like <Data />
+                        {
+                            if (_Reader.HasAttributes) //if current line has attributes
+                            {
+                                //read each attribute in the line if it matches the definition 
+
+                                model.Type = _Reader.GetAttribute("Type");
+                                model.Server = _Reader.GetAttribute("Server");
+                                model.Database = _Reader.GetAttribute("Database");
+                                model.UserID = _Reader.GetAttribute("UserID");
+                                model.PassWord = _Reader.GetAttribute("Password");
+                            }
                         }
-                    }
-                }//end of while
+                    }//end of while
+                    return model;
+                }
+            } else
+            {
+                throw new FileNotFoundException("Settings file to read does not exist where you said it would be!");
             }
-            return models;
+           
         }
 
         /// <summary>
@@ -53,28 +58,37 @@ namespace SAUSALibrary.FileHandling.XML.Reading
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public static List<ProjectHistoryModel> ReadProjects(string filePath)
+        public static List<LastProjectModel> ReadProjects(string settingsFolder, string settingsFile)
         {
-            List<ProjectHistoryModel> models = new List<ProjectHistoryModel>();
-
-            using (XmlReader _Reader = XmlReader.Create(new FileStream(filePath, FileMode.Open), new XmlReaderSettings() { CloseInput = true }))
+            var fqFilePath = Path.Combine(settingsFolder, settingsFile);
+            if(File.Exists(fqFilePath))
             {
-                while (_Reader.Read())
+                List<LastProjectModel> models = new List<LastProjectModel>();
+
+                using (XmlReader _Reader = XmlReader.Create(new FileStream(fqFilePath, FileMode.Open), new XmlReaderSettings() { CloseInput = true }))
                 {
-                    ProjectHistoryModel model = new ProjectHistoryModel();
-                    if ((_Reader.NodeType == XmlNodeType.Element) && (_Reader.Name == "Project"))
+                    while (_Reader.Read())
                     {
-                        if (_Reader.HasAttributes)
+                        LastProjectModel model = new LastProjectModel();
+                        if ((_Reader.NodeType == XmlNodeType.Element) && (_Reader.Name == "Project"))
                         {
-                            model.Name = _Reader.GetAttribute("Definition");
-                            model.Path = _Reader.GetAttribute("Path");
-                            model.Time = _Reader.GetAttribute("Time");
-                            models.Add(model);
+                            if (_Reader.HasAttributes)
+                            {
+                                model.Name = _Reader.GetAttribute("Definition");
+                                model.Path = _Reader.GetAttribute("Path");
+                                model.Time = _Reader.GetAttribute("Time");
+                                models.Add(model);
+                            }
                         }
                     }
                 }
+                return models;
+            } else
+            {
+                throw new FileNotFoundException("Settings file to read does not exist where you said it did!");
             }
-            return models;
+
+            
         }
 
         /// <summary>
@@ -93,7 +107,7 @@ namespace SAUSALibrary.FileHandling.XML.Reading
                     while (_Reader.Read())
                     {
 
-                        if ((_Reader.NodeType == XmlNodeType.Element) && (_Reader.Name == "Data"))
+                        if ((_Reader.NodeType == XmlNodeType.Element) && (_Reader.Name == "SqliteFile"))
                         {
                             if (_Reader.HasAttributes)
                             {
@@ -127,7 +141,7 @@ namespace SAUSALibrary.FileHandling.XML.Reading
                 while (_Reader.Read())
                 {
 
-                    if ((_Reader.NodeType == XmlNodeType.Element) && (_Reader.Name == "Data"))
+                    if ((_Reader.NodeType == XmlNodeType.Element) && (_Reader.Name == "SqliteFile"))
                     {
                         if (_Reader.HasAttributes)
                         {
@@ -205,15 +219,16 @@ namespace SAUSALibrary.FileHandling.XML.Reading
         /// <summary>
         /// Reads the storage attributes from the project file and returns them as a model class.
         /// </summary>
-        /// <param name="fullFilePath"></param>
+        /// <param name="workingFolder"></param>
         /// <returns></returns>
-        public static ProjectStorageAreaModel ReadProjectStorage(string fullFilePath)
+        public static ProjectStorageModel ReadProjectStorage(string workingFolder, string projectXMLFile)
         {
-            ProjectStorageAreaModel model = new ProjectStorageAreaModel();
+            ProjectStorageModel model = new ProjectStorageModel();
+            var fqFilePath = Path.Combine(workingFolder, projectXMLFile);
 
             try
             {
-                using (XmlReader _Reader = XmlReader.Create(new FileStream(fullFilePath, FileMode.Open), new XmlReaderSettings() { CloseInput = true }))
+                using (XmlReader _Reader = XmlReader.Create(new FileStream(fqFilePath, FileMode.Open), new XmlReaderSettings() { CloseInput = true }))
                 {
                     while (_Reader.Read())
                     {
@@ -249,11 +264,11 @@ namespace SAUSALibrary.FileHandling.XML.Reading
         /// <param name="filePath"></param>
         /// <returns>Settings model</returns>
         /// <exception cref="FileNotFoundException"></exception>
-        public static SausaSettingsModel ReadSettings(string filePath)
+        public static SettingsModel ReadSettings(string filePath)
         {
             if (File.Exists(filePath))
             {
-                SausaSettingsModel model = new SausaSettingsModel();
+                SettingsModel model = new SettingsModel();
 
                 using (XmlReader _Reader = XmlReader.Create(new FileStream(filePath, FileMode.Open), new XmlReaderSettings() { CloseInput = true }))
                 {

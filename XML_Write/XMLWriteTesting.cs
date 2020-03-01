@@ -6,7 +6,8 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
-
+using SAUSALibrary.Models;
+using SAUSALibrary.FileHandling.XML.Reading;
 
 namespace XML_Write
 {
@@ -15,20 +16,20 @@ namespace XML_Write
         static void Main(string[] args)
         {
             const string PROJECT = @"\Sausa\Test_Write_Project.xml";
-            const string SETTINGS = @"\Sausa\Test_Write_Settings.xml";
+            const string SETTINGS = "Hangerbay.xml";
 
             //*** ApplicationData       = C:\Users\Diesel\AppData\Roaming\Sausa\Test_Write_Project.xml //WORKING DIRECTORY
             //*** CommonApplicationData = C:\ProgramData\Sausa\Test_Write_Settings.xml                  //SETTINGS DIRECTORY
             //*** MyDocuments           = C:\Users\Diesel\Documents\Sausa\Test_Write_Project.xml       //DEFAULT Projects Folder
 
-            string _SettingsPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + SETTINGS; //actual path to my recent projects xml directory
-            string _ProjectPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + PROJECT; //actual path to my recent projects xml directory
+            //string _SettingsPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + SETTINGS; //actual path to my recent projects xml directory
+            //string _ProjectPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + PROJECT; //actual path to my recent projects xml directory
 
-            
-            if (!File.Exists(_SettingsPath)) //writes a new settings XML file to the given directory IF it does not exist.
+
+            /*if (!File.Exists(_SettingsPath)) //writes a new settings XML file to the given directory IF it does not exist.
             {
 
-                /* writes the following blank xml structure
+                *//* writes the following blank xml structure
 
                  <Sausa>
                    <ProjName>
@@ -41,7 +42,7 @@ namespace XML_Write
                      <Data FileName="XXX" Path="XXX" />
                    </Stacks>
                  </Sausa>
-                 */
+                 *//*
 
                 var xmlNode =
                     new XElement("Sausa",                               //root of xml node
@@ -70,7 +71,7 @@ namespace XML_Write
             else //appends to already existing XML file
             {
 
-                /*XmlDocument doc = new XmlDocument();
+                *//*XmlDocument doc = new XmlDocument();
                 doc.Load(_SettingsPath);
 
                 XmlNode sausaRoot = doc.DocumentElement; //gets root element in XML file
@@ -87,13 +88,16 @@ namespace XML_Write
                 projectsRoot.AppendChild(newProject);
 
                 //save the xml file
-                doc.Save(_SettingsPath);*/
-            }
+                doc.Save(_SettingsPath);*//*
+            }*/
 
             //ZipFromScratchFolder.SaveProject(FilePathDefaults.ScratchFolder,"Test.sdf", FilePathDefaults.DefaultSavePath);
             //var fullProjectFilePath = Path.Combine(FilePathDefaults.DefaultSavePath, "Test.sdf");
             //UnzipFromProjectFile.OpenProject(fullProjectFilePath, FilePathDefaults.ScratchFolder);
 
+            ExternalDBModel test = ReadXML.GetExternalProjectDBSettings(FilePathDefaults.ScratchFolder, SETTINGS);
+
+            Console.WriteLine(test.Type);
         }// end of main
     }
 }

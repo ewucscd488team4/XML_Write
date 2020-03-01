@@ -6,6 +6,8 @@ using SAUSALibrary.Defaults;
 using SAUSALibrary.FileHandling.Compression;
 using SAUSALibrary.FileHandling.Database.Reading;
 using SAUSALibrary.FileHandling.Database.Writing;
+using SAUSALibrary.FileHandling.Text.Writing;
+using SAUSALibrary.FileHandling.XML.Reading;
 using SAUSALibrary.FileHandling.XML.Writing;
 using SAUSALibrary.Init;
 using SAUSALibrary.Models;
@@ -96,6 +98,14 @@ namespace WpfApp1.ViewModels
             set => Set(ref _AddDelButtons, value);
         }
 
+        private bool _SaveSaveAsClose;
+
+        public bool SaveSaveAsClose
+        {
+            get => _SaveSaveAsClose;
+            set => Set(ref _SaveSaveAsClose, value);
+        }
+
         private Visibility _UnityWindowOnOff;
 
         public Visibility UnityWindowOnOff
@@ -119,6 +129,34 @@ namespace WpfApp1.ViewModels
             get => _FieldListVisibility;
             set => Set(ref _FieldListVisibility, value);
         }
+
+        private string? _XStorageDimension;
+        public string? XStorageDimension
+        {
+            get => _XStorageDimension;
+            set => Set(ref _XStorageDimension, value);
+        }
+
+        private string? _YStorageDimension;
+        public string? YStorageDimension
+        {
+            get => _YStorageDimension;
+            set => Set(ref _YStorageDimension, value);
+        }
+        private string? _ZStorageDimension;
+        public string? ZStorageDimension
+        {
+            get => _ZStorageDimension;
+            set => Set(ref _ZStorageDimension, value);
+        }
+        private string? _WeightStorageMax;
+        public string? WeightStorageMax
+        {
+            get => _WeightStorageMax;
+            set => Set(ref _WeightStorageMax, value);
+        }
+
+
         #endregion
 
         #region Command Declerations
@@ -143,6 +181,14 @@ namespace WpfApp1.ViewModels
         public RelayCommand? SaveAsCommand { get; private set; }
 
         public RelayCommand? CloseCommand { get; private set; }
+
+        public RelayCommand? OpenExportCommand { get; private set; }
+
+        public RelayCommand? ExportCommand { get; private set; }
+
+        public RelayCommand? OpenImportCommand { get; private set; }
+
+        public RelayCommand? ImportCommand { get; private set; }
 
         public RelayCommand? AddContainerToContainerListCommand { get; private set; }
 
@@ -196,12 +242,22 @@ namespace WpfApp1.ViewModels
             set => Set(ref _FieldModel, value);
         }
 
+        private ExternalDBModel? _CurrentProjectExternalDBSettings;
+
+        public ExternalDBModel? CurrentProjectExternalDBSettings
+        {
+            get => _CurrentProjectExternalDBSettings;
+            set => Set(ref _CurrentProjectExternalDBSettings, value);
+        }
+
         #endregion
 
         public MainViewModel()
         {
             ColdBoot();
             CommandInit();
+            InitStorageFields();
+            TestProject();
         }
 
         #region Command Methods
@@ -233,6 +289,9 @@ namespace WpfApp1.ViewModels
             //write project database fields with defaults and any custom ones as defined by the user
             WriteSQLite.PopulateCustomProjectDatabase(FilePathDefaults.ScratchFolder, ProjectSQLiteDBFile, NewDBFields);
 
+            //write the project DB table name and DB file to the project XML file
+            WriteXML.SaveDatabase(FilePathDefaults.ScratchFolder, ProjectXMLFile, ProjectSQLiteDBFile);
+
             //clear the custom field list
             NewDBFields.Clear();
 
@@ -254,21 +313,30 @@ namespace WpfApp1.ViewModels
 
         private void OnApplyRoomDimensions(Window window)
         {
-            //string array of dimensions to test with
-            string[] newRoomDimensions = { "15000X", "8000X", "5000X", "4000X" };
-
-            //write dimensions to the project XML file
-            WriteXML.SaveDimensions(FilePathDefaults.ScratchFolder, ProjectXMLFile, newRoomDimensions);
-
-            //TODO write room dimensions to the CSV file unity looks at
-
-            //set view state appropriate to project state (turn off new room)
-            NewProjectWithRoomNoStack();
-
-            //close the window
-            if (window != null)
+            if (RoomDimensionFieldValidator())
             {
-                window.Close();
+                //create string array to write room dimensions 
+                string[] NewRoomDimensions = { XStorageDimension, YStorageDimension, ZStorageDimension, WeightStorageMax };
+
+                //send array to the write method
+                WriteXML.SaveDimensions(FilePathDefaults.ScratchFolder, ProjectXMLFile, NewRoomDimensions);
+
+                //TODO write room dimensions to the CSV file unity looks at
+                WriteText.WriteRoomDimensionsToCSV(NewRoomDimensions);
+
+                //set view state appropriate to project state
+                NewProjectWithRoomNoStack();
+
+                //close the window
+                if (window != null)
+                {
+                    window.Close();
+                }
+            }
+            else
+            {
+                NewRoomErrorDialog error = new NewRoomErrorDialog();
+                error.Show();
             }
         }
 
@@ -305,7 +373,7 @@ namespace WpfApp1.ViewModels
                 FileCompressionUtils.OpenProject(FullProjectSavePath, FilePathDefaults.ScratchFolder);
 
                 //write project details to settings XML file, in the Projects child node
-                //TODO write opened project details to setting XML file
+                //TODO -ignore- write opened project details to setting XML file
 
                 //open list of stackmodel to populate the container list                
                 Containers = ReadSQLite.GetEntireStack(FilePathDefaults.ScratchFolder, ProjectSQLiteDBFile);
@@ -317,8 +385,11 @@ namespace WpfApp1.ViewModels
                 //change field visibility to enable use
                 OpenProjectState();
 
-                //write out CSV file for the unity window to initialize with
-                //TODO dump database to CSV file for unity window to read
+                //write out the CSV files for the unity window to initialize with
+                WriteCSVForUnityInit(ProjectSQLiteDBFile, ProjectXMLFile);
+
+                //WriteText.WriteDatabasetoCSV(FilePathDefaults.ScratchFolder, ProjectSQLiteDBFile);
+
             }
             else
             {
@@ -348,14 +419,16 @@ namespace WpfApp1.ViewModels
                 ProjectSQLiteDBFile = ConvertToSQLiteFileName(ProjectFileName);
                 ProjectXMLFile = ConvertToXMLFileName(ProjectFileName);
 
-                //full qualified project database path in scratch folder
-                //var fqDBFilePath = FilePathDefaults.ScratchFolder + ProjectSQLiteDBFile;
-
                 //set view state appropriate to our current project state
                 NewProjectNoRoomNoStack();
 
                 //set up blank project files to the scratch directory
                 NewProjectInit.NewProjectDetailOperations(FilePathDefaults.ScratchFolder, ProjectXMLFile, ProjectSQLiteDBFile);
+
+                //write project name to project XML file
+                WriteXML.SaveProjectName(FilePathDefaults.ScratchFolder, ProjectXMLFile);
+
+                //and we are done with project set up
             }
         }
 
@@ -390,7 +463,7 @@ namespace WpfApp1.ViewModels
 
             //TODO write NEW containers in container list to the project database when save menu dialog is invoked.
 
-            //TODO write new project save date to appropriate project in settings XML file
+            //TODO -ignore- write new project save date to appropriate project in settings XML file
         }
 
         /// <summary>
@@ -412,8 +485,10 @@ namespace WpfApp1.ViewModels
                 //compress working files in scratch folder to given save directory.
                 FileCompressionUtils.SaveProject(FilePathDefaults.ScratchFolder, FullProjectSavePath);
 
-                //TODO write given save directory to settings file, LastProjectSavedDirectory attribute.
-                //TODO update settings XML with new project save time
+                //TODO -mark- write given save directory to settings file, LastProjectSavedDirectory attribute.
+
+
+                //TODO -ignore- update settings XML with new project save time
             }
         }
 
@@ -442,8 +517,39 @@ namespace WpfApp1.ViewModels
         }
 
         /// <summary>
+        /// Import data to a project sqlite database from an already existing external database
+        /// </summary>
+        private void OnLaunchImport()
+        {
+            ImportData importData = new ImportData();
+            importData.DataContext = this;
+            importData.Show();
+        }
+
+        private void OnImport()
+        {
+            //TODO import from external DB
+        }
+
+        /// <summary>
+        /// Export project sqlite database to a pre-existing external database
+        /// </summary>
+        private void OnLaunchExport()
+        {
+            ExportProject exportData = new ExportProject();
+            exportData.DataContext = this;
+            exportData.Show();
+        }
+
+        private void OnExport()
+        {
+            //TODO export to external DB.
+        }
+
+        /// <summary>
         /// Add a container to the container list, and to the 3d Window for placement
         /// </summary>
+        /// 
         private void OnAddContainer()
         {
             if (ContainerFieldValidator())
@@ -455,6 +561,7 @@ namespace WpfApp1.ViewModels
                 //TODO add new container to project SQLite database when add button is pressed.
 
                 //TODO add new container to 3d view when add button is pressed.
+                WriteText.AddFullStackModeltoCSV(System.AppDomain.CurrentDomain.BaseDirectory, new FullStackModel(Containers.Count + 1, 100, 100, 100, AddContainerModel.Length, AddContainerModel.Width, AddContainerModel.Height, AddContainerModel.Weight, AddContainerModel.CrateName));
             }
             else
             {
@@ -493,6 +600,7 @@ namespace WpfApp1.ViewModels
             //set everything else to false
             NewStackOnOff = false;
             NewRoomOnOff = false;
+            SaveSaveAsClose = false;
             FullMenuOnOff = false;
             AddDelButtons = false;
             //set everything to hidden
@@ -501,6 +609,9 @@ namespace WpfApp1.ViewModels
             FieldListVisibility = Visibility.Hidden;
         }
 
+        /// <summary>
+        /// Initialize all relaycommand menu and button press commands
+        /// </summary>
         private void CommandInit()
         {
             AddCustomFieldToCustomFieldList = new RelayCommand(OnAddCustomFieldToCustomDBFieldList);    // 1 sets up the command that adds a new field to the user defined database field list
@@ -510,15 +621,21 @@ namespace WpfApp1.ViewModels
             OpenProjectCommand = new RelayCommand(OnOpenProject);                                       // 5 sets up the command that opens an existing project.
             NewProjectCommand = new RelayCommand(OnNewProject);                                         // 6 sets up the command that makes a new project.
             NewStackCommand = new RelayCommand(OnNewStack);                                             // 7 sets up the command that opens the view which defines the database fields for a new container stack.
-            NewStorageCommand = new RelayCommand(OnOpenNewStoreroom);                                       // 8 sets up the command that opens the view which defines the storage dimensions for a new project storage room dimensions.
+            NewStorageCommand = new RelayCommand(OnOpenNewStoreroom);                                   // 8 sets up the command that opens the view which defines the storage dimensions for a new project storage room dimensions.
             SaveCommand = new RelayCommand(OnSaveProject);                                              // 9 sets up the command that saves the current open project as it current state.
             SaveAsCommand = new RelayCommand(OnSaveAs);                                                 //10 sets up the command that saves the current open project as a file name and a location of the user's choice.
-            CloseCommand = new RelayCommand(OnClose);                                                   //11 sets up the command that closes the currently open project, abandoning any unsaved changes.
-            AddContainerToContainerListCommand = new RelayCommand(OnAddContainer);                      //12 sets up the command that adds a new container to the container list on the main page view.
-            DeleteContainerFromContainerListCommand = new RelayCommand(OnDeleteContainer);              //13 sets up the command that deletes the selected container from the container list on the main page view.
-            //                                                                                          //14 extra.
+            CloseCommand = new RelayCommand(OnClose);                                                   //11 sets up the command that closes the currently open project, abandoning any unsaved changes.            
+            OpenImportCommand = new RelayCommand(OnLaunchImport);                                       //12 sets up the command that opens the import view.
+            ImportCommand = new RelayCommand(OnImport);                                                 //13 sets up the command that imports from an external DB.
+            OpenExportCommand = new RelayCommand(OnLaunchExport);                                       //14 sets up the command that opens the export view.
+            ExportCommand = new RelayCommand(OnExport);                                                 //15 sets up the command that exports to an external DB.
+            AddContainerToContainerListCommand = new RelayCommand(OnAddContainer);                      //16 sets up the command that adds a new container to the container list on the main page view.
+            DeleteContainerFromContainerListCommand = new RelayCommand(OnDeleteContainer);              //17 sets up the command that deletes the selected container from the container list on the main page view.            
         }
 
+        /// <summary>
+        /// Initialize the lists used with New Stack view
+        /// </summary>
         private void InitializeNewStackLists()
         {
             DefaultFieldList = GetDefaultFields(); //sets the default fields
@@ -526,6 +643,9 @@ namespace WpfApp1.ViewModels
             SelectedModelOnCustomDBFieldList = new IndividualDatabaseFieldModel() { FieldName = "BLANK", FieldType = "BLANK" }; //don't know if this is needed or not, but leaving it in here anyway.
         }
 
+        /// <summary>
+        /// Initialize the main window lists for use with adding new containers
+        /// </summary>
         private void InitializeMainWindowFields()
         {
             //populate field list
@@ -533,6 +653,17 @@ namespace WpfApp1.ViewModels
 
             //initialize the attribute entry fields
             AddContainerModel = new StackModel();
+        }
+
+        /// <summary>
+        /// initialize storage fields in the storage field model for use with the new room view
+        /// </summary>
+        private void InitStorageFields()
+        {
+            XStorageDimension = "0";
+            YStorageDimension = "0";
+            ZStorageDimension = "0";
+            WeightStorageMax = "0";
         }
 
         #endregion
@@ -548,6 +679,7 @@ namespace WpfApp1.ViewModels
             OpenProjectOnOff = false;
             NewRoomOnOff = false;
             NewStackOnOff = false;
+            SaveSaveAsClose = true;
             FullMenuOnOff = true;
             AddDelButtons = true;
 
@@ -565,6 +697,7 @@ namespace WpfApp1.ViewModels
             OpenProjectOnOff = false;
             NewRoomOnOff = false;
             NewStackOnOff = false;
+            SaveSaveAsClose = true;
             FullMenuOnOff = true;
             AddDelButtons = true;
 
@@ -579,6 +712,7 @@ namespace WpfApp1.ViewModels
             OpenProjectOnOff = false;
             NewRoomOnOff = true;
             NewStackOnOff = true;
+            SaveSaveAsClose = true;
             FullMenuOnOff = false;
             AddDelButtons = false;
 
@@ -599,11 +733,6 @@ namespace WpfApp1.ViewModels
             UnityWindowOnOff = Visibility.Visible;
             CrateListVisibility = Visibility.Hidden;
             FieldListVisibility = Visibility.Hidden;
-        }
-
-        private void ClosedProjectState()
-        {
-
         }
 
         #endregion
@@ -666,8 +795,52 @@ namespace WpfApp1.ViewModels
             return true;
         }
 
+        private bool RoomDimensionFieldValidator()
+        {
+            if (string.IsNullOrEmpty(XStorageDimension) || XStorageDimension is "0")
+                return false;
+            if (string.IsNullOrEmpty(YStorageDimension) || YStorageDimension is "0")
+                return false;
+            if (string.IsNullOrEmpty(ZStorageDimension) || ZStorageDimension is "0")
+                return false;
+            if (string.IsNullOrEmpty(WeightStorageMax) || WeightStorageMax is "0")
+                return false;
+            return true;
+        }
 
+        private void WriteCSVForUnityInit(string dbFile, string xmlFile)
+        {
+            var model = ReadXML.ReadProjectStorage(FilePathDefaults.ScratchFolder, xmlFile);
+            string[] dimensions = { model.Length, model.Weight, model.Height, model.Weight };
+
+            //write room dimensions to CSV file
+            WriteText.WriteRoomDimensionsToCSV(dimensions);
+
+            //write database to SCV File
+            WriteText.WriteDatabasetoCSV(FilePathDefaults.ScratchFolder, dbFile);
+        }
 
         #endregion
+
+        private void TestProject()
+        {
+            ProjectSQLiteDBFile = "Hangerbay.sqlite";
+            ProjectXMLFile = "Hangerbay.xml";
+
+
+            //open list of stackmodel to populate the container list                
+            Containers = ReadSQLite.GetEntireStack(FilePathDefaults.ScratchFolder, ProjectSQLiteDBFile);
+            RaisePropertyChanged(nameof(Containers));
+
+            //initialize container property list and the model used for adding containers to the container list
+            InitializeMainWindowFields();
+
+            //get project external storage attributes from project XML file
+            CurrentProjectExternalDBSettings = ReadXML.GetExternalProjectDBSettings(FilePathDefaults.ScratchFolder, ProjectXMLFile);             
+
+            //change field visibility to enable use
+            OpenProjectState();
+        }
+
     }
 }

@@ -1,5 +1,5 @@
 ﻿
-namespace SAUSALibrary.Models.Database
+namespace SAUSALibrary.Models
 {
     public class FullStackModel
     {

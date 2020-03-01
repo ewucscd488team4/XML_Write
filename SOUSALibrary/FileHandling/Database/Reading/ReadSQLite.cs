@@ -96,18 +96,19 @@ namespace SAUSALibrary.FileHandling.Database.Reading
         /// <summary>
         /// Reads the current project SQLite database and returns the column header labels for the database
         /// </summary>
-        /// <param name="dbFullFilePath"></param>
-        /// <param name="dbFile"></param>
+        /// <param name="scratchFolder"></param>
+        /// <param name="projectDBFile"></param>
         /// <returns></returns>
-        public static ProjectDBFieldModel GetDatabaseFieldLabels(string dbFullFilePath, string dbFile)
+        public static ProjectDBFieldModel GetDatabaseFieldLabels(string scratchFolder, string projectDBFile)
         {
             ProjectDBFieldModel model = new ProjectDBFieldModel();
+            var fqFilePath = Path.Combine(scratchFolder, projectDBFile);
 
-            string[] file = dbFile.Split('.');
+            string[] file = projectDBFile.Split('.');
 
-            if (File.Exists(dbFullFilePath))
+            if (File.Exists(fqFilePath))
             {
-                SQLiteConnection m_dbConnection = new SQLiteConnection("Data Source=" + dbFullFilePath + ";Version=3;");
+                SQLiteConnection m_dbConnection = new SQLiteConnection("Data Source=" + fqFilePath + ";Version=3;");
                 SQLiteDataReader dritem = null;
                 m_dbConnection.Open();
 

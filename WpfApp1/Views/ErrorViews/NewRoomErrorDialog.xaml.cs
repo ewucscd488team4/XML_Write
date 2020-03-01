@@ -10,16 +10,22 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace WpfApp1.Views.FileViews
+namespace WpfApp1.Views.ErrorViews
 {
     /// <summary>
-    /// Interaction logic for OpenProject.xaml
+    /// Interaction logic for NewRoomErrorDialog.xaml
     /// </summary>
-    public partial class OpenProject : Window
+    public partial class NewRoomErrorDialog : Window
     {
-        public OpenProject()
+        public NewRoomErrorDialog()
         {
             InitializeComponent();
+        }
+
+        private void CloseWindow_Click(object sender, RoutedEventArgs e)
+        {
+            //closes the Window, all other processing happens in the view model
+            this.Close();
         }
     }
 }

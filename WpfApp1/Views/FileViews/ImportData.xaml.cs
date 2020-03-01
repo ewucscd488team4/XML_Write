@@ -13,11 +13,11 @@ using System.Windows.Shapes;
 namespace WpfApp1.Views.FileViews
 {
     /// <summary>
-    /// Interaction logic for OpenBuild.xaml
+    /// Interaction logic for ImportData.xaml
     /// </summary>
-    public partial class OpenBuild : Window
+    public partial class ImportData : Window
     {
-        public OpenBuild()
+        public ImportData()
         {
             InitializeComponent();
         }
