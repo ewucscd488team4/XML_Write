@@ -1,9 +1,11 @@
-﻿using System.Data;
+﻿using System.Collections.ObjectModel;
+using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Text;
 using MySql.Data.MySqlClient;
 using SAUSALibrary.FileHandling.XML.Reading;
+using SAUSALibrary.Models;
 
 namespace SAUSALibrary.FileHandling.Database.Writing
 {
@@ -60,7 +62,7 @@ namespace SAUSALibrary.FileHandling.Database.Writing
 
         }        
 
-        public static bool SetUpMySQLDatabase(string[] dbparemeters, string workingFolder, string projectXMLFile)
+        public static bool SetUp_MySQLDatabase(string[] dbparemeters, string workingFolder, string projectXMLFile)
         {
             //TODO set up an external MySQL database to match the already extant project SQLite database that must exist for this to be an option
 
@@ -136,7 +138,7 @@ namespace SAUSALibrary.FileHandling.Database.Writing
             }
         }
         
-        public static bool SetUpSQLDatabase(string[] dbparameters, string workingFolder, string projectXMLFile)
+        public static bool SetUp_MSSQLDatabase(string[] dbparameters, string workingFolder, string projectXMLFile)
         {
             /*//mysql
             CREATE TABLE TestData(
@@ -209,22 +211,101 @@ namespace SAUSALibrary.FileHandling.Database.Writing
             }            
         }
 
-        public static void ExportProjectToSQL()
+        public static bool Export_ToMSSQL(ExternalDBModel model, ObservableCollection<FullStackModel> containerList, string tableName)
         {
-            //TODO write project sqlite as it stands to an ALREADY EXISTING external Microsoft SQL server
+            SqlConnection conn;
+
+            SqlConnectionStringBuilder dbConString = new SqlConnectionStringBuilder
+            {
+                DataSource = model.Server,
+                InitialCatalog = model.Database,
+                UserID = model.UserID,
+                Password = model.PassWord
+            };
+
+            try
+            {
+                using (conn = new SqlConnection(dbConString.ConnectionString))
+                {
+                    foreach(FullStackModel listModel in containerList)
+                    {
+                        StringBuilder sqlCommand = new StringBuilder();
+                        sqlCommand.Append("INSERT INTO ");
+                        sqlCommand.Append(tableName);
+                        sqlCommand.Append(" (xPos, yPos, zPos, length, width, height, weight, name) values (");
+                        sqlCommand.Append("@XPOS,@YPOS,@ZPOS,@LENGTH,@WIDTH,@HEIGHT,@WEIGHT,@NAME);");
+
+                        SqlCommand comm = new SqlCommand(sqlCommand.ToString());
+                        comm.Parameters.AddWithValue("@XPOS", listModel.XPOS.ToString());
+                        comm.Parameters.AddWithValue("@YPOS", listModel.YPOS.ToString());
+                        comm.Parameters.AddWithValue("@ZPOS", listModel.ZPOS.ToString());
+                        comm.Parameters.AddWithValue("@LENGTH", listModel.Length.ToString());
+                        comm.Parameters.AddWithValue("@WIDTH", listModel.Width.ToString());
+                        comm.Parameters.AddWithValue("@HEIGHT", listModel.Height.ToString());
+                        comm.Parameters.AddWithValue("@WEIGHT", listModel.Weight.ToString());
+                        comm.Parameters.AddWithValue("@NAME", listModel.CrateName.ToString());
+                        comm.ExecuteNonQuery();
+                    }
+                }
+                return true;
+            } catch (SqlException)
+            {
+                return false;
+            }
+
         }
 
-        public static void ExportProjectToMySQL()
+        public static bool Export_ToMySQL(ExternalDBModel model, ObservableCollection<FullStackModel> containerList, string tableName)
         {
-            //TODO write project sqlite as it stands to an ALREADY EXISTING external MySQL server
+            MySqlConnection conn;
+            
+            MySqlBaseConnectionStringBuilder dbConString = new MySqlConnectionStringBuilder
+            {
+                Server = model.Server,
+                Database = model.Database,
+                UserID = model.UserID,
+                Password = model.PassWord
+            };
+
+            try
+            {
+                using (conn = new MySqlConnection(dbConString.ConnectionString))
+                {
+                    foreach(FullStackModel listModel in containerList) {
+                        StringBuilder sqlCommand = new StringBuilder();
+                        sqlCommand.Append("INSERT INTO ");
+                        sqlCommand.Append(tableName);
+                        sqlCommand.Append(" (xPos, yPos, zPos, length, width, height, weight, name) values (");
+                        sqlCommand.Append("@XPOS,@YPOS,@ZPOS,@LENGTH,@WIDTH,@HEIGHT,@WEIGHT,@NAME);");
+
+                        MySqlCommand comm = new MySqlCommand(sqlCommand.ToString());
+
+                        comm.Parameters.AddWithValue("@XPOS", listModel.XPOS.ToString());
+                        comm.Parameters.AddWithValue("@YPOS", listModel.YPOS.ToString());
+                        comm.Parameters.AddWithValue("@ZPOS", listModel.ZPOS.ToString());
+                        comm.Parameters.AddWithValue("@LENGTH", listModel.Length.ToString());
+                        comm.Parameters.AddWithValue("@WIDTH", listModel.Width.ToString());
+                        comm.Parameters.AddWithValue("@HEIGHT", listModel.Height.ToString());
+                        comm.Parameters.AddWithValue("@WEIGHT", listModel.Weight.ToString());
+                        comm.Parameters.AddWithValue("@NAME", listModel.CrateName.ToString());
+                        comm.ExecuteNonQuery();
+                    }
+                }
+                return true;
+
+            } catch (MySqlException)
+            {
+                return false;
+            }
+
         }
 
-        public static void ImportProjectFromMySQL()
+        public static void Import_FromMySQL(ExternalDBModel model, ObservableCollection<FullStackModel> containerList)
         {
             //TODO import data from an ALREADY EXISTING external MySQL server into the designated project sqlite file
         }
 
-        public static void ImportProjectFromSQL()
+        public static void Import_FromSQL(ExternalDBModel model, ObservableCollection<FullStackModel> containerList)
         {
             //TODO import data from an ALREADY EXISTING external Microsoft SQL server into the designated project sqlite file
         }
