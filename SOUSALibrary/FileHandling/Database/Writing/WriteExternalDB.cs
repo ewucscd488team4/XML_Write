@@ -61,34 +61,9 @@ namespace SAUSALibrary.FileHandling.Database.Writing
             }
 
         }
-
-        public static bool TestSQL(string[] info)
+        
+        public static bool SetUp_MySQLDatabase(string[] dbparemeters, string workingFolder, string projectXMLFile)
         {
-            SqlConnectionStringBuilder dbConString = new SqlConnectionStringBuilder
-            {
-                DataSource = info[0],
-                InitialCatalog = info[1],
-                UserID = info[2],
-                Password = info[3]
-            };
-            using (SqlConnection connection = new SqlConnection(dbConString.ConnectionString))
-            {
-                try
-                {
-                    connection.Open();
-                    return true;
-                }
-                catch (SqlException)
-                {
-                    return false;
-                }
-            }
-        }
-
-        public static bool SetUp_MySQLDatabase(ExternalDBModel dbparemeters, string workingFolder, string projectXMLFile)
-        {
-            //TODO set up an external MySQL database to match the already extant project SQLite database that must exist for this to be an option
-
             /*
              CREATE TABLE TestData (
             crateIndex smallint(4) NOT NULL AUTO_INCREMENT,
@@ -101,6 +76,7 @@ namespace SAUSALibrary.FileHandling.Database.Writing
             weight Decimal(7,2) NOT NULL,
             name VARCHAR(150) NOT NULL,
             PRIMARY KEY (crateIndex)
+            )
              */
 
             string table;
@@ -116,17 +92,15 @@ namespace SAUSALibrary.FileHandling.Database.Writing
                 throw new FileNotFoundException("Project file not found!");
             }
 
-
-
             MySqlConnectionStringBuilder dbConString = new MySqlConnectionStringBuilder
             {
-                Server = dbparemeters.Server,
-                Database = dbparemeters.Database,
-                UserID = dbparemeters.UserID,
-                Password = dbparemeters.PassWord
+                Server = dbparemeters[0],
+                Database = dbparemeters[1],
+                UserID = dbparemeters[2],
+                Password = dbparemeters[3]
             };
 
-            using (SqlConnection connection = new SqlConnection(dbConString.ConnectionString))
+            using (MySqlConnection connection = new MySqlConnection(dbConString.ConnectionString))
             {
                 try
                 {
@@ -135,27 +109,40 @@ namespace SAUSALibrary.FileHandling.Database.Writing
                     //build the command to execute
                     StringBuilder commandBuilder = new StringBuilder();
 
-
+                    //1
                     commandBuilder.Append("CREATE TABLE ");
+                    //2
                     commandBuilder.Append(table + "(");
+                    //3
                     commandBuilder.Append("crateIndex smallint(4) NOT NULL AUTO_INCREMENT,");
+                    //4
                     commandBuilder.Append("xPos Decimal(10,4),");
+                    //5
                     commandBuilder.Append("yPos Decimal(10,4),");
+                    //6
                     commandBuilder.Append("zPos Decimal(10,4),");
+                    //7
                     commandBuilder.Append("length Decimal(8,4) NOT NULL,");
+                    //8
                     commandBuilder.Append("width Decimal(8,4) NOT NULL,");
+                    //9
                     commandBuilder.Append("height Decimal(8,4) NOT NULL,");
+                    //10
                     commandBuilder.Append("weight Decimal(7,2) NOT NULL,");
+                    //11
                     commandBuilder.Append("name VARCHAR(150) NOT NULL,");
+                    //12
                     commandBuilder.Append("PRIMARY KEY (crateIndex)");
+                    //13
+                    commandBuilder.Append(")");
 
 
-                    SqlCommand cmd = new SqlCommand(commandBuilder.ToString(), connection);
+                    MySqlCommand cmd = new MySqlCommand(commandBuilder.ToString(), connection);
                     cmd.ExecuteNonQuery();
 
                     return true;
                 }
-                catch (SqlException)
+                catch (MySqlException)
                 {
                     return false;
                 }
@@ -358,6 +345,7 @@ namespace SAUSALibrary.FileHandling.Database.Writing
             {
                 using (MySqlConnection conn = new MySqlConnection(dbConString.ConnectionString))
                 {
+                    conn.Open();
                     foreach (FullStackModel listModel in containerList)
                     {
                         string importCommand = "INSERT INTO " + table + " (xPos, yPos, zPos, length, width, height, weight, name) values " +
