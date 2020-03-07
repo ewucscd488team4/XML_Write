@@ -8,6 +8,9 @@ using System.Xml;
 using System.Xml.Linq;
 using SAUSALibrary.Models;
 using SAUSALibrary.FileHandling.XML.Reading;
+using SAUSALibrary.FileHandling.Database.Writing;
+using System.Collections.ObjectModel;
+using SAUSALibrary.FileHandling.Database.Reading;
 
 namespace XML_Write
 {
@@ -17,6 +20,7 @@ namespace XML_Write
         {
             const string PROJECT = @"\Sausa\Test_Write_Project.xml";
             const string SETTINGS = "Hangerbay.xml";
+            const string ProjectSQLiteDBFile = "Hangerbay.sqlite";
 
             //*** ApplicationData       = C:\Users\Diesel\AppData\Roaming\Sausa\Test_Write_Project.xml //WORKING DIRECTORY
             //*** CommonApplicationData = C:\ProgramData\Sausa\Test_Write_Settings.xml                  //SETTINGS DIRECTORY
@@ -95,9 +99,44 @@ namespace XML_Write
             //var fullProjectFilePath = Path.Combine(FilePathDefaults.DefaultSavePath, "Test.sdf");
             //UnzipFromProjectFile.OpenProject(fullProjectFilePath, FilePathDefaults.ScratchFolder);
 
-            ExternalDBModel test = ReadXML.GetExternalProjectDBSettings(FilePathDefaults.ScratchFolder, SETTINGS);
+            //ExternalDBModel test = ReadXML.GetExternalProjectDBSettings(FilePathDefaults.ScratchFolder, SETTINGS);
 
-            Console.WriteLine(test.Type);
+            //string[] blahParam = new string[4];
+            //blahParam[0] = test.Server;
+            //blahParam[1] = test.Database;
+            //blahParam[2] = test.UserID;
+            //blahParam[3] = test.PassWord;
+
+            string[] testParm = new string[] {
+                "SQL5047.site4now.net" , "DB_A4733C_SAUSA" , "DB_A4733C_SAUSA_admin" , "Sausa#1test"
+            };
+
+            ObservableCollection<FullStackModel> ListForTesting = ReadSQLite.GetEntireStack(FilePathDefaults.ScratchFolder, ProjectSQLiteDBFile);
+
+            bool testExport = WriteExternalDB.Export_ToMSSQL(testParm, ListForTesting, FilePathDefaults.ScratchFolder, SETTINGS);
+
+            //bool testSQL = WriteExternalDB.TestSQL(testParm);
+
+            //bool testing = WriteExternalDB.SetUp_MSSQLDatabase(testParm, FilePathDefaults.ScratchFolder, SETTINGS);
+
+            /*StringBuilder sBuilder = new StringBuilder();
+
+            sBuilder.Append("CREATE TABLE ");                //1
+            sBuilder.Append("testData (\n");                 //2
+            sBuilder.Append("crateIndex smallint IDENTITY(1,1) NOT NULL,\n"); //3
+            sBuilder.Append("xPos Decimal(10,4),\n");           //4
+            sBuilder.Append("ypos Decimal(10,4),\n");           //5
+            sBuilder.Append("zPos Decimal(10,4),\n");           //6
+            sBuilder.Append("length Decimal(8,4) NOT NULL,\n");  //7
+            sBuilder.Append("width Decimal(8,4) NOT NULL,\n");  //8
+            sBuilder.Append("height Decimal(8,4) NOT NULL,\n"); //9
+            sBuilder.Append("weight Decimal(7,2) NOT NULL,\n"); //10
+            sBuilder.Append("name VARCHAR(150) NOT NULL\n");    //11                    
+            sBuilder.Append(")");
+
+            */
+            //Console.WriteLine(testSQL + "\n" + testing);
+            Console.WriteLine(testExport);
         }// end of main
     }
 }

@@ -21,7 +21,7 @@ namespace SAUSALibrary.FileHandling.Database.Writing
                 UserID = testParameters[2],
                 Password = testParameters[3]
             };
-            
+
             try
             {
                 using (conn = new MySqlConnection(dbConString.ConnectionString))
@@ -35,7 +35,7 @@ namespace SAUSALibrary.FileHandling.Database.Writing
             {
                 return false;
             }
-            
+
         }
 
         public static bool TestMSSQL_DBConnection(string[] testParameters)
@@ -60,9 +60,32 @@ namespace SAUSALibrary.FileHandling.Database.Writing
                 }
             }
 
-        }        
+        }
 
-        public static bool SetUp_MySQLDatabase(string[] dbparemeters, string workingFolder, string projectXMLFile)
+        public static bool TestSQL(string[] info)
+        {
+            SqlConnectionStringBuilder dbConString = new SqlConnectionStringBuilder
+            {
+                DataSource = info[0],
+                InitialCatalog = info[1],
+                UserID = info[2],
+                Password = info[3]
+            };
+            using (SqlConnection connection = new SqlConnection(dbConString.ConnectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    return true;
+                }
+                catch (SqlException)
+                {
+                    return false;
+                }
+            }
+        }
+
+        public static bool SetUp_MySQLDatabase(ExternalDBModel dbparemeters, string workingFolder, string projectXMLFile)
         {
             //TODO set up an external MySQL database to match the already extant project SQLite database that must exist for this to be an option
 
@@ -84,22 +107,23 @@ namespace SAUSALibrary.FileHandling.Database.Writing
 
             var fqProjectFilePath = Path.Combine(workingFolder, projectXMLFile);
 
-            if(File.Exists(fqProjectFilePath))
+            if (File.Exists(fqProjectFilePath))
             {
                 table = ReadXML.ReadProjectDBTableName(fqProjectFilePath);
-            } else
+            }
+            else
             {
                 throw new FileNotFoundException("Project file not found!");
             }
-            
-            
 
-            SqlConnectionStringBuilder dbConString = new SqlConnectionStringBuilder
+
+
+            MySqlConnectionStringBuilder dbConString = new MySqlConnectionStringBuilder
             {
-                DataSource = dbparemeters[0],
-                InitialCatalog = dbparemeters[1],
-                UserID = dbparemeters[2],
-                Password = dbparemeters[3]
+                Server = dbparemeters.Server,
+                Database = dbparemeters.Database,
+                UserID = dbparemeters.UserID,
+                Password = dbparemeters.PassWord
             };
 
             using (SqlConnection connection = new SqlConnection(dbConString.ConnectionString))
@@ -110,7 +134,7 @@ namespace SAUSALibrary.FileHandling.Database.Writing
 
                     //build the command to execute
                     StringBuilder commandBuilder = new StringBuilder();
-                    
+
 
                     commandBuilder.Append("CREATE TABLE ");
                     commandBuilder.Append(table + "(");
@@ -128,7 +152,7 @@ namespace SAUSALibrary.FileHandling.Database.Writing
 
                     SqlCommand cmd = new SqlCommand(commandBuilder.ToString(), connection);
                     cmd.ExecuteNonQuery();
-                    
+
                     return true;
                 }
                 catch (SqlException)
@@ -137,21 +161,21 @@ namespace SAUSALibrary.FileHandling.Database.Writing
                 }
             }
         }
-        
+
         public static bool SetUp_MSSQLDatabase(string[] dbparameters, string workingFolder, string projectXMLFile)
         {
             /*//mysql
-            CREATE TABLE TestData(
-            crateIndex smallint(4) NOT NULL AUTO_INCREMENT,
-            cLength Decimal(8, 4) NOT NULL,
-            cWidth Decimal(8, 4) NOT NULL,
-            cHeight Decimal(8, 4) NOT NULL,
-            cWeight Decimal(7, 2) NOT NULL,
-            xPos Decimal(10, 4) NOT NULL,
-            ypos Decimal(10, 4) NOT NULL,
-            zPos Decimal(10, 4) NOT NULL,
-            nomen VARCHAR(150) NOT NULL,
-            PRIMARY KEY(crateIndex)
+            CREATE TABLE TestData (
+            crateIndex smallint IDENTITY(1,1) NOT NULL,
+            xPos Decimal(10,4) NOT NULL,
+            ypos Decimal(10,4) NOT NULL,
+            zPos Decimal(10,4) NOT NULL,
+            length Decimal(8,4) NOT NULL,
+            width Decimal(8,4) NOT NULL,
+            height Decimal(8,4) NOT NULL,
+            weight Decimal(7,2) NOT NULL,
+            name VARCHAR(150) NOT NULL
+            )
             )*/
 
             string table;
@@ -166,134 +190,213 @@ namespace SAUSALibrary.FileHandling.Database.Writing
             {
                 throw new FileNotFoundException("Project file not found!");
             }
-
-            MySqlConnection conn;
-            MySqlConnectionStringBuilder dbConString = new MySqlConnectionStringBuilder
+            
+            SqlConnectionStringBuilder dbConString = new SqlConnectionStringBuilder
             {
-                Server = dbparameters[0],
-                Database = dbparameters[1],
+                DataSource = dbparameters[0],
+                InitialCatalog = dbparameters[1],
                 UserID = dbparameters[2],
                 Password = dbparameters[3]
             };
 
-            try
+            using (SqlConnection connection = new SqlConnection(dbConString.ConnectionString))
             {
-                using (conn = new MySqlConnection(dbConString.ConnectionString))
+                try
                 {
-                    conn.Open();
-
+                    connection.Open();
                     StringBuilder sBuilder = new StringBuilder();
 
-                    sBuilder.Append("CREATE TABLE "); //1
-                    sBuilder.Append(table + " ("); //2
-                    sBuilder.Append("crateIndex smallint(4) NOT NULL AUTO_INCREMENT,"); //3
-                    sBuilder.Append("xPos Decimal(10,4),"); //4
-                    sBuilder.Append("ypos Decimal(10,4),"); //5
-                    sBuilder.Append("zPos Decimal(10,4),"); //6
-                    sBuilder.Append("length Decimal(8,4) NOT NULL");  //7
-                    sBuilder.Append("width Decimal(8,4) NOT NULL,");  //8
-                    sBuilder.Append("height Decimal(8,4) NOT NULL,"); //9
-                    sBuilder.Append("weight Decimal(7,2) NOT NULL,"); //10
-                    sBuilder.Append("name VARCHAR(150) NOT NULL,");   //11
-                    sBuilder.Append("PRIMARY KEY (crateIndex)");      //12
-                    sBuilder.Append(")");                             //13
+                    sBuilder.Append("CREATE TABLE ");
+                    //1
 
-                    MySqlCommand cmd = new MySqlCommand(sBuilder.ToString(),conn);
+                    sBuilder.Append(table + " (");
+                    //2
+
+                    sBuilder.Append("crateIndex smallint IDENTITY(1,1) NOT NULL,");
+                    //3
+
+                    sBuilder.Append("xPos Decimal(10,4),");
+                    //4
+
+                    sBuilder.Append("ypos Decimal(10,4),");
+                    //5
+
+                    sBuilder.Append("zPos Decimal(10,4),");
+                    //6
+
+                    sBuilder.Append("length Decimal(8,4) NOT NULL,");
+                    //7
+
+                    sBuilder.Append("width Decimal(8,4) NOT NULL,");
+                    //8
+
+                    sBuilder.Append("height Decimal(8,4) NOT NULL,");
+                    //9
+
+                    sBuilder.Append("weight Decimal(7,2) NOT NULL,");
+                    //10
+
+                    sBuilder.Append("name VARCHAR(150) NOT NULL");
+                    //11  
+                    
+                    sBuilder.Append(")");
+                    //12
+
+                    SqlCommand cmd = new SqlCommand(sBuilder.ToString(), connection);
                     cmd.ExecuteNonQuery();
-
                     return true;
                 }
-
+                catch (SqlException)
+                {
+                    return false;
+                }
             }
-            catch (MySqlException)
-            {
-                return false;
-            }            
+
+
         }
 
-        public static bool Export_ToMSSQL(ExternalDBModel model, ObservableCollection<FullStackModel> containerList, string tableName)
+        public static bool Export_ToMSSQL(string[] model, ObservableCollection<FullStackModel> containerList, string workingFolder, string projectXMLFile)
         {
-            SqlConnection conn;
+            string table;
+
+            var fqProjectFilePath = Path.Combine(workingFolder, projectXMLFile);
+
+            if (File.Exists(fqProjectFilePath))
+            {
+                table = ReadXML.ReadProjectDBTableName(fqProjectFilePath);
+            }
+            else
+            {
+                throw new FileNotFoundException("Project file not found!");
+            }
 
             SqlConnectionStringBuilder dbConString = new SqlConnectionStringBuilder
             {
-                DataSource = model.Server,
-                InitialCatalog = model.Database,
-                UserID = model.UserID,
-                Password = model.PassWord
+                DataSource = model[0],
+                InitialCatalog = model[1],
+                UserID = model[2],
+                Password = model[3]
             };
 
             try
             {
-                using (conn = new SqlConnection(dbConString.ConnectionString))
+                using (SqlConnection conn = new SqlConnection(dbConString.ConnectionString))
                 {
-                    foreach(FullStackModel listModel in containerList)
-                    {
-                        StringBuilder sqlCommand = new StringBuilder();
-                        sqlCommand.Append("INSERT INTO ");
-                        sqlCommand.Append(tableName);
-                        sqlCommand.Append(" (xPos, yPos, zPos, length, width, height, weight, name) values (");
-                        sqlCommand.Append("@XPOS,@YPOS,@ZPOS,@LENGTH,@WIDTH,@HEIGHT,@WEIGHT,@NAME);");
+                    conn.Open();
 
-                        SqlCommand comm = new SqlCommand(sqlCommand.ToString());
-                        comm.Parameters.AddWithValue("@XPOS", listModel.XPOS.ToString());
-                        comm.Parameters.AddWithValue("@YPOS", listModel.YPOS.ToString());
-                        comm.Parameters.AddWithValue("@ZPOS", listModel.ZPOS.ToString());
-                        comm.Parameters.AddWithValue("@LENGTH", listModel.Length.ToString());
-                        comm.Parameters.AddWithValue("@WIDTH", listModel.Width.ToString());
-                        comm.Parameters.AddWithValue("@HEIGHT", listModel.Height.ToString());
-                        comm.Parameters.AddWithValue("@WEIGHT", listModel.Weight.ToString());
-                        comm.Parameters.AddWithValue("@NAME", listModel.CrateName.ToString());
-                        comm.ExecuteNonQuery();
+                    foreach (FullStackModel listModel in containerList)
+                    {                        
+
+                        string importCommand = "INSERT INTO " + table + " (xPos, yPos, zPos, length, width, height, weight, name) values " +
+                            "(@XPOS,@YPOS,@ZPOS,@LENGTH,@WIDTH,@HEIGHT,@WEIGHT,@NAME);";
+
+
+                        SqlCommand pushDataCommand = new SqlCommand(importCommand, conn);
+                                                
+                        SqlParameter xPosition = new SqlParameter("@XPOS", listModel.XPOS.ToString());
+                        pushDataCommand.Parameters.Add(xPosition);
+                        
+                        SqlParameter yPosition = new SqlParameter("@YPOS", listModel.YPOS.ToString());
+                        pushDataCommand.Parameters.Add(yPosition);
+
+                        SqlParameter zPosition = new SqlParameter("@ZPOS", listModel.ZPOS.ToString());
+                        pushDataCommand.Parameters.Add(zPosition);
+
+                        SqlParameter iLength = new SqlParameter("@LENGTH", listModel.Length.ToString());
+                        pushDataCommand.Parameters.Add(iLength);
+
+                        SqlParameter iWidth = new SqlParameter("@WIDTH", listModel.Width.ToString());
+                        pushDataCommand.Parameters.Add(iWidth);
+
+                        SqlParameter iHeight = new SqlParameter("@HEIGHT", listModel.Height.ToString());
+                        pushDataCommand.Parameters.Add(iHeight);
+
+                        SqlParameter iWeight = new SqlParameter("@WEIGHT", listModel.Weight.ToString());
+                        pushDataCommand.Parameters.Add(iWeight);
+
+                        SqlParameter iName = new SqlParameter("@NAME", listModel.CrateName.ToString());
+                        pushDataCommand.Parameters.Add(iName);
+
+                        pushDataCommand.ExecuteNonQuery();
+                        
                     }
+                    conn.Close();
                 }
                 return true;
-            } catch (SqlException)
+            }
+            catch (SqlException)
             {
                 return false;
             }
 
         }
 
-        public static bool Export_ToMySQL(ExternalDBModel model, ObservableCollection<FullStackModel> containerList, string tableName)
-        {
-            MySqlConnection conn;
-            
+        public static bool Export_ToMySQL(string[] model, ObservableCollection<FullStackModel> containerList, string workingFolder, string projectXMLFile)
+        {            
+            string table;
+
+            var fqProjectFilePath = Path.Combine(workingFolder, projectXMLFile);
+
+            if (File.Exists(fqProjectFilePath))
+            {
+                table = ReadXML.ReadProjectDBTableName(fqProjectFilePath);
+            }
+            else
+            {
+                throw new FileNotFoundException("Project file not found!");
+            }
+
             MySqlBaseConnectionStringBuilder dbConString = new MySqlConnectionStringBuilder
             {
-                Server = model.Server,
-                Database = model.Database,
-                UserID = model.UserID,
-                Password = model.PassWord
+                Server = model[0],
+                Database = model[1],
+                UserID = model[2],
+                Password = model[3]
             };
 
             try
             {
-                using (conn = new MySqlConnection(dbConString.ConnectionString))
+                using (MySqlConnection conn = new MySqlConnection(dbConString.ConnectionString))
                 {
-                    foreach(FullStackModel listModel in containerList) {
-                        StringBuilder sqlCommand = new StringBuilder();
-                        sqlCommand.Append("INSERT INTO ");
-                        sqlCommand.Append(tableName);
-                        sqlCommand.Append(" (xPos, yPos, zPos, length, width, height, weight, name) values (");
-                        sqlCommand.Append("@XPOS,@YPOS,@ZPOS,@LENGTH,@WIDTH,@HEIGHT,@WEIGHT,@NAME);");
+                    foreach (FullStackModel listModel in containerList)
+                    {
+                        string importCommand = "INSERT INTO " + table + " (xPos, yPos, zPos, length, width, height, weight, name) values " +
+                            "(@XPOS,@YPOS,@ZPOS,@LENGTH,@WIDTH,@HEIGHT,@WEIGHT,@NAME);";
 
-                        MySqlCommand comm = new MySqlCommand(sqlCommand.ToString());
 
-                        comm.Parameters.AddWithValue("@XPOS", listModel.XPOS.ToString());
-                        comm.Parameters.AddWithValue("@YPOS", listModel.YPOS.ToString());
-                        comm.Parameters.AddWithValue("@ZPOS", listModel.ZPOS.ToString());
-                        comm.Parameters.AddWithValue("@LENGTH", listModel.Length.ToString());
-                        comm.Parameters.AddWithValue("@WIDTH", listModel.Width.ToString());
-                        comm.Parameters.AddWithValue("@HEIGHT", listModel.Height.ToString());
-                        comm.Parameters.AddWithValue("@WEIGHT", listModel.Weight.ToString());
-                        comm.Parameters.AddWithValue("@NAME", listModel.CrateName.ToString());
-                        comm.ExecuteNonQuery();
+                        MySqlCommand pushDataCommand = new MySqlCommand(importCommand, conn);
+
+                        MySqlParameter xPosition = new MySqlParameter("@XPOS", listModel.XPOS.ToString());
+                        pushDataCommand.Parameters.Add(xPosition);
+
+                        MySqlParameter yPosition = new MySqlParameter("@YPOS", listModel.YPOS.ToString());
+                        pushDataCommand.Parameters.Add(yPosition);
+
+                        MySqlParameter zPosition = new MySqlParameter("@ZPOS", listModel.ZPOS.ToString());
+                        pushDataCommand.Parameters.Add(zPosition);
+
+                        MySqlParameter iLength = new MySqlParameter("@LENGTH", listModel.Length.ToString());
+                        pushDataCommand.Parameters.Add(iLength);
+
+                        MySqlParameter iWidth = new MySqlParameter("@WIDTH", listModel.Width.ToString());
+                        pushDataCommand.Parameters.Add(iWidth);
+
+                        MySqlParameter iHeight = new MySqlParameter("@HEIGHT", listModel.Height.ToString());
+                        pushDataCommand.Parameters.Add(iHeight);
+
+                        MySqlParameter iWeight = new MySqlParameter("@WEIGHT", listModel.Weight.ToString());
+                        pushDataCommand.Parameters.Add(iWeight);
+
+                        MySqlParameter iName = new MySqlParameter("@NAME", listModel.CrateName.ToString());
+                        pushDataCommand.Parameters.Add(iName);
+
+                        pushDataCommand.ExecuteNonQuery();
                     }
                 }
                 return true;
 
-            } catch (MySqlException)
+            }
+            catch (MySqlException)
             {
                 return false;
             }
