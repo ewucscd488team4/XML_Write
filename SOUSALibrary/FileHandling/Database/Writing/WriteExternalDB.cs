@@ -390,15 +390,5 @@ namespace SAUSALibrary.FileHandling.Database.Writing
             }
 
         }
-
-        public static void Import_FromMySQL(ExternalDBModel model, ObservableCollection<FullStackModel> containerList)
-        {
-            //TODO import data from an ALREADY EXISTING external MySQL server into the designated project sqlite file
-        }
-
-        public static void Import_FromSQL(ExternalDBModel model, ObservableCollection<FullStackModel> containerList)
-        {
-            //TODO import data from an ALREADY EXISTING external Microsoft SQL server into the designated project sqlite file
-        }
     }
 }
